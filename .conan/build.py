@@ -16,7 +16,7 @@ def get_version():
         return os.getenv("TRAVIS_BRANCH", "master")
 
 def get_username():
-    return os.getenv("CONAN_USERNAME", "skypjack")
+    return os.getenv("CONAN_USERNAME", "gbellizio")
 
 
 def get_reference():
