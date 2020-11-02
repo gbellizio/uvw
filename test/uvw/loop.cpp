@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
-#include <uvw.hpp>
+#include <uvw/prepare.h>
+#include <uvw/work.h>
+#include <uvw/loop.h>
 
 
 TEST(Loop, DefaultLoop) {
@@ -9,7 +11,7 @@ TEST(Loop, DefaultLoop) {
     ASSERT_FALSE(def->alive());
     ASSERT_NO_THROW(def->stop());
 
-    def->walk([](uvw::BaseHandle &) { FAIL(); });
+    def->walk([](auto &) { FAIL(); });
 
     auto def2 = uvw::Loop::getDefault();
     ASSERT_EQ(def, def2);
@@ -21,11 +23,9 @@ TEST(Loop, Functionalities) {
     auto handle = loop->resource<uvw::PrepareHandle>();
     auto req = loop->resource<uvw::WorkReq>([]{});
 
-    auto err = [](const auto &, auto &) { FAIL(); };
-
-    loop->on<uvw::ErrorEvent>(err);
-    req->on<uvw::ErrorEvent>(err);
-    handle->on<uvw::ErrorEvent>(err);
+    loop->on<uvw::ErrorEvent>([](auto &&...) { FAIL(); });
+    req->on<uvw::ErrorEvent>([](auto &&...) { FAIL(); });
+    handle->on<uvw::ErrorEvent>([](auto &&...) { FAIL(); });
 
     ASSERT_TRUE(static_cast<bool>(handle));
     ASSERT_TRUE(static_cast<bool>(req));
@@ -33,14 +33,18 @@ TEST(Loop, Functionalities) {
     ASSERT_TRUE(loop->descriptor());
     ASSERT_NO_THROW(loop->now());
     ASSERT_NO_THROW(loop->update());
+
+#ifndef _MSC_VER
+    // fork isn't implemented on Windows in libuv and it returns an error by default
     ASSERT_NO_THROW(loop->fork());
+#endif
 
     ASSERT_FALSE(loop->alive());
     ASSERT_FALSE(loop->timeout().first);
 
     handle->start();
     handle->on<uvw::PrepareEvent>([](const auto &, auto &hndl) {
-        hndl.loop().walk([](uvw::BaseHandle &) {
+        hndl.loop().walk([](auto &) {
             static bool trigger = true;
             ASSERT_TRUE(trigger);
             trigger = false;
@@ -53,7 +57,7 @@ TEST(Loop, Functionalities) {
     ASSERT_TRUE(loop->timeout().first);
     ASSERT_NO_THROW(loop->run());
 
-    loop->walk([](uvw::BaseHandle &) { FAIL(); });
+    loop->walk([](auto &) { FAIL(); });
 
     ASSERT_NO_THROW(loop->run<uvw::Loop::Mode::ONCE>());
     ASSERT_NO_THROW(loop->run<uvw::Loop::Mode::NOWAIT>());
@@ -81,6 +85,14 @@ TEST(Loop, Configure) {
     ASSERT_NO_THROW(loop->configure(uvw::Loop::Configure::BLOCK_SIGNAL, 9));
     ASSERT_NO_THROW(loop->run());
 }
+
+
+TEST(Loop, IdleTime) {
+    auto loop = uvw::Loop::create();
+    loop->configure(uvw::Loop::Configure::IDLE_TIME);
+    ASSERT_EQ(loop->idleTime().count(), 0u);
+}
+
 
 TEST(Loop, Raw) {
     auto loop = uvw::Loop::getDefault();

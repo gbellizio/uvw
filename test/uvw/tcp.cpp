@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <uvw.hpp>
+#include <uvw/tcp.h>
 
 
 TEST(TCP, Functionalities) {
@@ -70,7 +70,7 @@ TEST(TCP, SockPeer) {
     server->on<uvw::ErrorEvent>([](const auto &, auto &) { FAIL(); });
     client->on<uvw::ErrorEvent>([](const auto &, auto &) { FAIL(); });
 
-    server->once<uvw::ListenEvent>([&address, port](const uvw::ListenEvent &, uvw::TCPHandle &handle) {
+    server->once<uvw::ListenEvent>([&address](const uvw::ListenEvent &, uvw::TCPHandle &handle) {
         std::shared_ptr<uvw::TCPHandle> socket = handle.loop().resource<uvw::TCPHandle>();
 
         socket->on<uvw::ErrorEvent>([](const uvw::ErrorEvent &, uvw::TCPHandle &) { FAIL(); });
@@ -83,14 +83,12 @@ TEST(TCP, SockPeer) {
         uvw::Addr addr = handle.sock();
 
         ASSERT_EQ(addr.ip, address);
-        ASSERT_EQ(addr.port, decltype(addr.port){port});
     });
 
     client->once<uvw::ConnectEvent>([&address](const uvw::ConnectEvent &, uvw::TCPHandle &handle) {
         uvw::Addr addr = handle.peer();
 
         ASSERT_EQ(addr.ip, address);
-        ASSERT_NE(addr.port, decltype(addr.port){0});
 
         handle.close();
     });

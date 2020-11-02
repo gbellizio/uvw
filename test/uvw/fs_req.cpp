@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <uvw.hpp>
+#include <uvw/fs.h>
 #include <chrono>
 
 #ifdef _WIN32
@@ -98,18 +98,6 @@ TEST(FsReq, MkdtempAndRmdirSync) {
 
     loop->run();
 }
-
-
-/*
-TEST(FsReq, Scandir) {
-    // TODO
-}
-
-
-TEST(FsReq, ScandirSync) {
-    // TODO
-}
-*/
 
 
 TEST(FsReq, Stat) {
@@ -264,16 +252,6 @@ TEST(FsReq, RenameSync) {
     ASSERT_TRUE(fsReq->renameSync(filename, rename));
 
     loop->run();
-}
-
-
-TEST(FsReq, CopyFile) {
-    // TODO
-}
-
-
-TEST(FsReq, CopyFileSync) {
-    // TODO
 }
 
 
@@ -784,6 +762,63 @@ TEST(FsReq, LchownSync) {
     auto uid = static_cast<uvw::Uid>(statR.second.st_uid);
     auto gid = static_cast<uvw::Uid>(statR.second.st_gid);
     ASSERT_TRUE(fsReq->lchownSync(filename, uid, gid));
+
+    loop->run();
+}
+
+TEST(FsReq, ReadDir) {
+    const std::string dir_name = std::string{TARGET_FS_REQ_DIR};
+
+    auto loop = uvw::Loop::getDefault();
+    auto fsReq = loop->resource<uvw::FsReq>();
+
+    bool checkFsReadDirEvent = false;
+    bool checkFsOpenDirEvent = false;
+    bool checkFsCloseDirEvent = false;
+
+    fsReq->on<uvw::ErrorEvent>([](const auto &, auto &) { FAIL(); });
+
+    fsReq->on<uvw::FsEvent<uvw::FsReq::Type::CLOSEDIR>>([&checkFsCloseDirEvent](const auto &, auto &) {
+        ASSERT_FALSE(checkFsCloseDirEvent);
+        checkFsCloseDirEvent = true;
+    });
+
+    fsReq->on<uvw::FsEvent<uvw::FsReq::Type::READDIR>>([&checkFsReadDirEvent](const auto &event, auto &hndl) {
+        ASSERT_FALSE(checkFsReadDirEvent);
+        if (!event.eos) {
+            hndl.readdir();
+        } else {
+            checkFsReadDirEvent = true;
+            hndl.closedir();
+        }
+    });
+
+    fsReq->on<uvw::FsEvent<uvw::FsReq::Type::OPENDIR>>([&checkFsOpenDirEvent](const auto &, auto &hndl) {
+        ASSERT_FALSE(checkFsOpenDirEvent);
+        checkFsOpenDirEvent = true;
+        hndl.readdir();
+    });
+
+    fsReq->opendir(dir_name);
+    loop->run();
+
+    ASSERT_TRUE(checkFsCloseDirEvent);
+    ASSERT_TRUE(checkFsReadDirEvent);
+    ASSERT_TRUE(checkFsOpenDirEvent);
+}
+
+TEST(FsReq, ReadDirSync) {
+    const std::string dir_name = std::string{TARGET_FS_REQ_DIR};
+
+    auto loop = uvw::Loop::getDefault();
+    auto fsReq = loop->resource<uvw::FsReq>();
+
+    ASSERT_TRUE(fsReq->opendirSync(dir_name));
+    auto res = fsReq->readdirSync();
+    while(res.first) {
+        res = fsReq->readdirSync();
+    }
+    ASSERT_TRUE(fsReq->closedirSync());
 
     loop->run();
 }

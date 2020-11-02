@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <uvw.hpp>
+#include <uvw/timer.h>
 
 
 TEST(Timer, StartAndStop) {
@@ -10,8 +10,8 @@ TEST(Timer, StartAndStop) {
     bool checkTimerNoRepeatEvent = false;
     bool checkTimerRepeatEvent = false;
 
-    handleNoRepeat->on<uvw::ErrorEvent>([](const auto &, auto &) { FAIL(); });
-    handleRepeat->on<uvw::ErrorEvent>([](const auto &, auto &) { FAIL(); });
+    handleNoRepeat->on<uvw::ErrorEvent>([](auto &&...) { FAIL(); });
+    handleRepeat->on<uvw::ErrorEvent>([](auto &&...) { FAIL(); });
 
     handleNoRepeat->on<uvw::TimerEvent>([&checkTimerNoRepeatEvent](const auto &, auto &handle) {
         ASSERT_FALSE(checkTimerNoRepeatEvent);
@@ -111,9 +111,8 @@ TEST(Timer, Fake) {
     auto loop = uvw::Loop::getDefault();
     auto handle = loop->resource<uvw::TimerHandle>();
 
-    auto l = [](const auto &, auto &) { FAIL(); };
-    handle->on<uvw::ErrorEvent>(l);
-    handle->on<uvw::TimerEvent>(l);
+    handle->on<uvw::ErrorEvent>([](auto &&...) { FAIL(); });
+    handle->on<uvw::TimerEvent>([](auto &&...) { FAIL(); });
 
     handle->start(uvw::TimerHandle::Time{0}, uvw::TimerHandle::Time{0});
     handle->close();
@@ -121,5 +120,21 @@ TEST(Timer, Fake) {
     ASSERT_FALSE(handle->active());
     ASSERT_TRUE(handle->closing());
 
+    loop->run();
+}
+
+
+TEST(Timer, BaseHandleWalk) {
+    auto loop = uvw::Loop::getDefault();
+    auto timer = loop->resource<uvw::TimerHandle>();
+
+    timer->on<uvw::TimerEvent>([](const auto &, uvw::TimerHandle &handle) {
+        handle.loop().walk(uvw::Overloaded{
+            [](uvw::TimerHandle &h){ h.close(); },
+            [](auto &&){}
+        });
+    });
+
+    timer->start(uvw::TimerHandle::Time{100}, uvw::TimerHandle::Time{100});
     loop->run();
 }

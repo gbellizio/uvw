@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
-#include <uvw.hpp>
+#include <uvw/pipe.h>
+#include <uvw/process.h>
 
 
 TEST(Process, Pid) {
@@ -35,14 +36,4 @@ TEST(Process, StdIO) {
 
     pipe->close();
     loop->run();
-}
-
-
-TEST(Process, TODO) {
-    auto loop = uvw::Loop::getDefault();
-    auto handle = uvw::ProcessHandle::create(loop);
-
-    handle = nullptr;
-
-    // TODO
 }

@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
-#include <uvw.hpp>
+#include <uvw/async.h>
+#include <uvw/handle.hpp>
 
 
 struct fake_handle_t { void *data; };
@@ -42,7 +43,7 @@ TEST(Handle, Functionalities) {
     ASSERT_EQ(handle->recvBufferSize(), static_cast<decltype(handle->recvBufferSize())>(0));
     ASSERT_FALSE(handle->recvBufferSize(0));
 
-    ASSERT_NO_THROW(handle->fileno());
+    ASSERT_NO_THROW(handle->fd());
 }
 
 

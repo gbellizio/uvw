@@ -1,10 +1,11 @@
-#pragma once
+#ifndef UVW_UNDERLYING_TYPE_INCLUDE_H
+#define UVW_UNDERLYING_TYPE_INCLUDE_H
 
 
 #include <memory>
 #include <type_traits>
 #include <utility>
-#include "loop.hpp"
+#include "loop.h"
 
 
 namespace uvw {
@@ -23,34 +24,19 @@ class UnderlyingType {
 protected:
     struct ConstructorAccess { explicit ConstructorAccess(int) {} };
 
+    template<typename R = U>
     auto get() noexcept {
-        return &resource;
-    }
-
-    auto get() const noexcept {
-        return &resource;
-    }
-
-    template<typename R>
-    auto get() noexcept {
-        static_assert(not std::is_same<R, U>::value, "!");
         return reinterpret_cast<R *>(&resource);
+    }
+
+    template<typename R = U>
+    auto get() const noexcept {
+        return reinterpret_cast<const R *>(&resource);
     }
 
     template<typename R, typename... P>
     auto get(UnderlyingType<P...> &other) noexcept {
         return reinterpret_cast<R *>(&other.resource);
-    }
-
-    template<typename R>
-    auto get() const noexcept {
-        static_assert(not std::is_same<R, U>::value, "!");
-        return reinterpret_cast<const R *>(&resource);
-    }
-
-    template<typename R, typename... P>
-    auto get(const UnderlyingType<P...> &other) const noexcept {
-        return reinterpret_cast<const R *>(&other.resource);
     }
 
 public:
@@ -62,7 +48,7 @@ public:
     UnderlyingType(UnderlyingType &&) = delete;
 
     virtual ~UnderlyingType() {
-        static_assert(std::is_base_of<UnderlyingType<T, U>, T>::value, "!");
+        static_assert(std::is_base_of_v<UnderlyingType<T, U>, T>);
     }
 
     UnderlyingType & operator=(const UnderlyingType &) = delete;
@@ -129,3 +115,5 @@ private:
 
 
 }
+
+#endif // UVW_UNDERLYING_TYPE_INCLUDE_H

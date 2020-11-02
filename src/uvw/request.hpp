@@ -1,4 +1,5 @@
-#pragma once
+#ifndef UVW_REQUEST_INCLUDE_H
+#define UVW_REQUEST_INCLUDE_H
 
 
 #include <type_traits>
@@ -11,6 +12,11 @@
 namespace uvw {
 
 
+/**
+ * @brief Request base class.
+ *
+ * Base type for all `uvw` request types.
+ */
 template<typename T, typename U>
 class Request: public Resource<T, U> {
 protected:
@@ -28,18 +34,15 @@ protected:
     }
 
     template<typename F, typename... Args>
-    auto invoke(F &&f, Args&&... args)
-    -> std::enable_if_t<not std::is_void<std::result_of_t<F(Args...)>>::value> {
-        auto err = std::forward<F>(f)(std::forward<Args>(args)...);
-        if(err) { Emitter<T>::publish(ErrorEvent{err}); }
-        else { this->leak(); }
-    }
-
-    template<typename F, typename... Args>
-    auto invoke(F &&f, Args&&... args)
-    -> std::enable_if_t<std::is_void<std::result_of_t<F(Args...)>>::value> {
-        std::forward<F>(f)(std::forward<Args>(args)...);
-        this->leak();
+    auto invoke(F &&f, Args&&... args) {
+        if constexpr(std::is_void_v<std::invoke_result_t<F, Args...>>) {
+            std::forward<F>(f)(std::forward<Args>(args)...);
+            this->leak();
+        } else {
+            auto err = std::forward<F>(f)(std::forward<Args>(args)...);
+            if(err) { Emitter<T>::publish(ErrorEvent{err}); }
+            else { this->leak(); }
+        }
     }
 
 public:
@@ -73,3 +76,5 @@ public:
 
 
 }
+
+#endif // UVW_REQUEST_INCLUDE_H

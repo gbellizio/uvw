@@ -3,34 +3,37 @@
 <!--
 @cond TURN_OFF_DOXYGEN
 -->
-[![Build Status](https://travis-ci.org/skypjack/uvw.svg?branch=master)](https://travis-ci.org/skypjack/uvw)
-[![Build status](https://ci.appveyor.com/api/projects/status/m5ndm8gnu8isg2to?svg=true)](https://ci.appveyor.com/project/skypjack/uvw)
-[![Coverage Status](https://coveralls.io/repos/github/skypjack/uvw/badge.svg?branch=master)](https://coveralls.io/github/skypjack/uvw?branch=master)
+[![Build Status](https://github.com/skypjack/uvw/workflows/build/badge.svg)](https://github.com/skypjack/uvw/actions)
+[![Coverage](https://codecov.io/gh/skypjack/uvw/branch/master/graph/badge.svg)](https://codecov.io/gh/skypjack/uvw)
+[![Documentation](https://img.shields.io/badge/docs-docsforge-blue)](http://uvw.docsforge.com/)
 [![Download](https://api.bintray.com/packages/skypjack/conan/uvw%3Askypjack/images/download.svg)](https://bintray.com/skypjack/conan/uvw%3Askypjack/_latestVersion)
 [![Gitter chat](https://badges.gitter.im/skypjack/uvw.png)](https://gitter.im/skypjack/uvw)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/skypjack)
 
 Do you have a **question** that doesn't require you to open an issue? Join the
 [gitter channel](https://gitter.im/skypjack/uvw).<br/>
-If you use `uvw` and you want to **say thanks** or **support** the project,
-please **consider becoming a patron**:
-
-[![Patreon](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/bePatron?c=1772573)
-
+If you use `uvw` and you want to say thanks or support the project, please
+**consider becoming a
+[sponsor](https://github.com/users/skypjack/sponsorship)**.<br/>
+You can help me make the difference.
+[Many thanks](https://skypjack.github.io/sponsorship/) to those who supported me
+and still support me today.
 <!--
 @endcond TURN_OFF_DOXYGEN
 -->
 
 # Introduction
 
-`uvw` is a header-only, event based, tiny and easy to use
-[`libuv`](https://github.com/libuv/libuv) wrapper in modern C++.<br/>
+`uvw` started as a header-only, event based, tiny and easy to use wrapper for
+[`libuv`](https://github.com/libuv/libuv) written in modern C++.<br/>
+Now it's finally available also as a compilable static library.
+
 The basic idea is to hide completely the *C-ish* interface of `libuv` behind a
 graceful C++ API. Currently, no `uv_*_t` data structure is actually exposed by
 the library.<br/>
 Note that `uvw` stays true to the API of `libuv` and it doesn't add anything to
 its interface. For the same reasons, users of the library must follow the same
-rules who are used to follow with `libuv`.<br/>
+rules which are used with `libuv`.<br/>
 As an example, a *handle* should be initialized before any other operation and
 closed once it is no longer in use.
 
@@ -81,7 +84,7 @@ int main() {
 
 ## Motivation
 
-The main reason for which `uvw` has been written is the fact that it does not
+The main reason for which `uvw` has been written is the fact that there does not
 exist a valid `libuv` wrapper in C++. That's all.
 
 # Build Instructions
@@ -90,24 +93,31 @@ exist a valid `libuv` wrapper in C++. That's all.
 
 To be able to use `uvw`, users must provide the following system-wide tools:
 
-* A full-featured compiler that supports at least C++14.
+* A full-featured compiler that supports at least C++17.
 * `libuv` (which version depends on the tag of `uvw` in use).
 
 The requirements below are mandatory to compile the tests and to extract the
 documentation:
 
-* CMake version 3.2 or later.
+* CMake version 3.13 or later.
 * Doxygen version 1.8 or later.
 
-Note that `libuv` is part of the dependencies of the project and it will be
-cloned by `cmake` (see below for further details).<br/>
-Because of that, users have not to install it to compile and execute the tests.
+Note that `libuv` is part of the dependencies of the project and may be cloned
+by `CMake` in some cases (see below for further details).<br/>
+Because of that, users don't have to install it to run the tests or when `uvw`
+libraries are compiled through `CMake`.
 
 ## Library
 
-`uvw` is a header-only library.<br/>
-This means that including the `uvw.hpp` header or one of the other `uvw/*.hpp`
-headers is enough to use it.<br/>
+`uvw` is a dual-mode library. It can be used in its header-only form or as a
+compiled static library.<br/>
+The following sections describe what to do in both cases to get `uvw` up and
+runningin your own project.
+
+### Header-only
+
+To use `uvw` as a header-only library, all is needed is to include the `uvw.hpp`
+header or one of the other `uvw/*.hpp` files.<br/>
 It's a matter of adding the following line at the top of a file:
 
 ```cpp
@@ -116,8 +126,23 @@ It's a matter of adding the following line at the top of a file:
 
 Then pass the proper `-I` argument to the compiler to add the `src` directory to
 the include paths.<br/>
-Note that users are demanded to correctly setup include directories and
-libraries search paths for `libuv`.
+Note that users are required to correctly setup the include directories and
+libraries search paths for `libuv` in this case.
+
+When used through `CMake`, the `uvw::uvw` target is exported for convenience.
+
+### Static
+
+To use `uvw` as a compiled library, set the `BUILD_UVW_LIBS` options in cmake
+before including the project.<br/>
+This option triggers the generation of a targets named
+`uvw::uvw-static`. The matching version of `libuv` is also
+compiled and exported as `uv::uv-static` for convenience.
+
+In case you don't use or don't want to use `CMake`, you can still compile all
+`.cpp` files and include all `.h` files to get the job done. In this case, users
+are required to correctly setup the include directories and libraries search
+paths for `libuv`.
 
 ## Versioning
 
@@ -159,22 +184,22 @@ To navigate it with your favorite browser:
 * `$ cd build`
 * `$ your_favorite_browser docs/html/index.html`
 
-The API reference is also available [online](https://skypjack.github.io/uvw/)
-for the latest version.
+The same version is also available [online](https://skypjack.github.io/uvw/)
+for the latest release, that is the last stable tag. If you are looking for
+something more pleasing to the eye, consider reading the nice-looking version
+available on [docsforge](https://uvw.docsforge.com/): same documentation, much
+more pleasant to read.
 
 ### Note
 
 The documentation is mostly inspired by the official
 [libuv API documentation](http://docs.libuv.org/en/v1.x/) for obvious
-reasons.<br/>
-If you are mainly interested in the way `uvw` imports `libuv` in a `cmake` based
-project, I suggest you to take a look at
-[this](https://github.com/skypjack/libuv_cmake) repository instead.
+reasons.
 
 ## Tests
 
 To compile and run the tests, `uvw` requires `libuv` and `googletest`.<br/>
-`cmake` will download and compile both the libraries before to compile anything
+`CMake` will download and compile both the libraries before compiling anything
 else.
 
 To build the tests:
@@ -209,7 +234,7 @@ For more details, please refer to the
 Initialization is usually performed under the hood and can be even passed over,
 as far as handles are created using the `Loop::resource` member function.<br/>
 On the other side, handles keep themselves alive until one explicitly closes
-them. Because of that, memory usage will grow up if users simply forget about a
+them. Because of that, memory usage will grow if users simply forget about a
 handle.<br/>
 Therefore the rule quickly becomes *always close your handles*. It's as simple
 as calling the `close` member function on them.
@@ -220,8 +245,8 @@ Usually initializing a request object is not required. Anyway, the recommended
 way to create a request is still through the `Loop::resource` member
 function.<br/>
 Requests will keep themselves alive as long as they are bound to unfinished
-underlying activities. This means that users have not to discard explicitly a
-request.<br/>
+underlying activities. This means that users don't have to discard a
+request explicitly .<br/>
 Therefore the rule quickly becomes *feel free to make a request and forget about
 it*. It's as simple as calling a member function on them.
 
@@ -234,8 +259,8 @@ is enough, it's easy as doing this:
 auto loop = uvw::Loop::getDefault();
 ```
 
-Note that loop objects don't require to be closed explicitly, even if they offer
-the `close` member function in case an user wants to do that.<br/>
+Note that loop objects don't require being closed explicitly, even if they offer
+the `close` member function in case a user wants to do that.<br/>
 Loops can be started using the `run` member function. The two calls below are
 equivalent:
 
@@ -251,7 +276,7 @@ In order to create a resource and to bind it to the given loop, just do the
 following:
 
 ```cpp
-auto tcp = loop.resource<uvw::TCPHandle>();
+auto tcp = loop->resource<uvw::TCPHandle>();
 ```
 
 The line above will create and initialize a tcp handle, then a shared pointer to
@@ -288,29 +313,29 @@ std::shared_ptr<int> data = resource->data<int>();
 Remember from the previous section that a handle will keep itself alive until
 one invokes the `close` member function on it.<br/>
 To know what are the handles that are still alive and bound to a given loop,
-just do the following:
+there exists the `walk` member function. It returns handles with their types.
+Therefore, the use of `Overloaded` is recommended to be able to intercept all
+types of interest:
 
 ```cpp
-loop.walk([](uvw::BaseHandle &){ /* application code here */ });
+handle.loop().walk(uvw::Overloaded{
+    [](uvw::TimerHandle &h){ /* application code for timers here */ },
+    [](auto &&){ /* ignore all other types */ }
+});
 ```
 
-`BaseHandle` exposes a few methods and cannot be promoted to the original type
-of the handle (even though `type` and `category` member functions fill the gap
-somehow).<br/>
-Anyway, it can be used to close the handle that originated from it. As an
-example, all the pending handles can be closed easily as it follows:
+This function can also be used for a completely generic approach. For example,
+all the pending handles can be closed easily as it follows:
 
 ```cpp
-loop.walk([](uvw::BaseHandle &h){ h.close(); });
+loop->walk([](auto &&h){ h.close(); });
 ```
 
 No need to keep track of them.
 
-To know what are the available resources' types, please refer the API reference.
-
 ## The event-based approach
 
-For `uvw` offers an event-based approach, resources are small event emitters
+`uvw` offers an event-based approach, so resources are small event emitters
 to which listeners can be attached.<br/>
 Attaching a listener to a resource is the recommended way to be notified about
 changes.<br/>
@@ -327,11 +352,10 @@ It means that the following function types are all valid:
 * `void(EventType &, const ResourceType &)`
 * `void(const EventType &, const ResourceType &)`
 
-Once more, please note that there is no need to keep around references to the
-resources: they will pass themselves as an argument whenever an event is
-published.
+Please note that there is no need to keep around references to the resources:
+they will pass themselves as an argument whenever an event is published.
 
-There exist two methods to attach an event to a resource:
+There exist two methods to attach a listener to a resource:
 
 * `resource.once<EventType>(listener)`: the listener will be automatically
   removed after the first event of the given type.
@@ -342,8 +366,12 @@ Both of them return an object of type `ResourceType::Connection` (as an example,
 A connection object can be used later as an argument to the `erase` member
 function of the resource to remove the listener.<br/>
 There exists also the `clear` member function to drop all the listeners at once.
+Note that `clear` should only be invoked on non-active handles. The handles
+exploit the same event mechanism made available to users to satisfy pending
+requests. Invoking `clear` on an active handle, for example with requests still
+in progress, risks leading to memory leaks or unexpected behavior.
 
-Almost all the resources use to emit `ErrorEvent` events in case of errors.<br/>
+Almost all the resources emit `ErrorEvent` in case of errors.<br/>
 All the other events are specific for the given resource and documented in the
 API reference.
 
@@ -351,7 +379,7 @@ The code below shows how to create a simple tcp server using `uvw`:
 
 ```cpp
 auto loop = uvw::Loop::getDefault();
-auto tcp = loop.resource<uvw::TCPHandle>();
+auto tcp = loop->resource<uvw::TCPHandle>();
 
 tcp->on<uvw::ErrorEvent>([](const uvw::ErrorEvent &, uvw::TCPHandle &) { /* something went wrong */ });
 
@@ -369,8 +397,8 @@ tcp->listen();
 
 Note also that `uvw::TCPHandle` already supports _IPv6_ out-of-the-box. The
 statement above is equivalent to `tcp->bind<uvw::IPv4>("127.0.0.1", 4242)`.<br/>
-It's suffice to explicitly specify `uvw::IPv6` as the underlying protocol to use
-it.
+It's sufficient to explicitly specify `uvw::IPv6` as the underlying protocol to
+use it.
 
 The API reference is the recommended documentation for further details about
 resources and their methods.
@@ -383,14 +411,14 @@ reasons, almost all the classes in `uvw` give direct access to them.<br/>
 Please, note that this functions should not be used directly unless users know
 exactly what they are doing and what are the risks. Going raw is dangerous,
 mainly because the lifetime management of a loop, a handle or a request is
-completely in charge to the library and working around it could quickly break
+completely controlled by the library and working around it could quickly break
 things.
 
 That being said, _going raw_ is a matter of using the `raw` member functions:
 
 ```cpp
 auto loop = uvw::Loop::getDefault();
-auto tcp = loop.resource<uvw::TCPHandle>();
+auto tcp = loop->resource<uvw::TCPHandle>();
 
 uv_loop_t *raw = loop->raw();
 uv_tcp_t *handle = tcp->raw();
@@ -408,8 +436,8 @@ who has partecipated so far.
 
 # License
 
-Code and documentation Copyright (c) 2016-2019 Michele Caini.<br/>
-Logo Copyright (c) 2018-2019 Richard Caseres.
+Code and documentation Copyright (c) 2016-2020 Michele Caini.<br/>
+Logo Copyright (c) 2018-2020 Richard Caseres.
 
 Code released under
 [the MIT license](https://github.com/skypjack/uvw/blob/master/LICENSE).
@@ -423,34 +451,10 @@ Logo released under
 -->
 # Support
 
-## Patreon
-
-Become a [patron](https://www.patreon.com/bePatron?c=1772573) and get access to
-extra content, help me spend more time on the projects you love and create new
-ones for you. Your support will help me to continue the work done so far and
-make it more professional and feature-rich every day.<br/>
-It takes very little to
-[become a patron](https://www.patreon.com/bePatron?c=1772573) and thus help the
-software you use every day. Don't miss the chance.
-
-## Donation
-
-Developing and maintaining `uvw` takes some time and lots of coffee. It still
-lacks a proper test suite, documentation is partially incomplete and not all
-functionalities have been fully implemented yet.<br/>
-If you want to support this project, you can offer me an espresso. I'm from
-Italy, we're used to turning the best coffee ever in code. If you find that it's
-not enough, feel free to support me the way you prefer.<br/>
-Take a look at the donation button at the top of the page for more details or
-just click [here](https://www.paypal.me/skypjack).
-
-## Hire me
-
-If you start using `uvw` and need help, if you want a new feature and want me
-to give it the highest priority, if you have any other reason to contact me:
-do not hesitate. I'm available for hiring.<br/>
-Feel free to take a look at my [profile](https://github.com/skypjack) and
-contact me by mail.
+If you want to support this project, you can
+[offer me](https://github.com/users/skypjack/sponsorship) an espresso.<br/>
+If you find that it's not enough, feel free to
+[help me](https://www.paypal.me/skypjack) the way you prefer.
 <!--
 @endcond TURN_OFF_DOXYGEN
 -->

@@ -1,9 +1,10 @@
-#pragma once
+#ifndef UVW_RESOURCE_INCLUDE_H
+#define UVW_RESOURCE_INCLUDE_H
 
 
 #include <memory>
 #include <utility>
-#include "emitter.hpp"
+#include "emitter.h"
 #include "underlying_type.hpp"
 
 
@@ -38,11 +39,9 @@ protected:
 
 public:
     explicit Resource(ConstructorAccess ca, std::shared_ptr<Loop> ref)
-        : UnderlyingType<T, U>{ca, std::move(ref)},
-          Emitter<T>{},
-          std::enable_shared_from_this<T>{}
+        : UnderlyingType<T, U>{ca, std::move(ref)}
     {
-        this->get()->data = static_cast<T*>(this);
+        this->get()->data = this;
     }
 
     /**
@@ -67,5 +66,6 @@ private:
     std::shared_ptr<void> sPtr{nullptr};
 };
 
-
 }
+
+#endif // UVW_RESOURCE_INCLUDE_H
